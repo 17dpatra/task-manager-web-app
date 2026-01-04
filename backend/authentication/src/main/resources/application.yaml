@@ -1,0 +1,22 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: authentication
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://localhost:${server.port}
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:${server.port}
+
+  profiles:
+    active: local
+
+logging:
+  level:
+    org.springframework.security: info
+    org.springframework.security.oauth2: debug
+
