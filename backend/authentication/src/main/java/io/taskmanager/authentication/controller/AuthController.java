@@ -1,36 +1,23 @@
 package io.taskmanager.authentication.controller;
 
-import io.taskmanager.authentication.domain.user.AppUser;
-import io.taskmanager.authentication.domain.user.UserResponse;
-import io.taskmanager.authentication.service.RegistrationService;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.springframework.http.HttpStatus;
+import io.taskmanager.authentication.dto.auth.AuthResponse;
+import io.taskmanager.authentication.dto.auth.LoginRequest;
+import io.taskmanager.authentication.service.AuthenticationService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
+    private final AuthenticationService authenticationService;
 
-    private final RegistrationService registrationService;
-
-    public AuthController(RegistrationService registrationService) {
-        this.registrationService = registrationService;
+    public AuthController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
-    public record RegisterRequest(
-            @NotBlank @Size(min = 3, max = 50) String username,
-            @NotBlank @Size(min = 8, max = 100) String password,
-            @Size(max = 100) String displayName
-    ) {
-    }
-
-
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(@RequestBody RegisterRequest req) {
-        AppUser u = registrationService.register(req.username(), req.password(), req.displayName());
-        return new UserResponse(u.getId(), u.getUsername(), u.getDisplayName(), u.getRoles());
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authenticationService.login(request));
     }
 }
 

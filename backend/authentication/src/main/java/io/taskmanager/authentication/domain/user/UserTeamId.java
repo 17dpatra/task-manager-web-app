@@ -7,22 +7,22 @@ import java.util.Objects;
 
 @Embeddable
 public class UserTeamId implements Serializable {
-    private Long userId;
-    private Long teamId;
+    private long userId;
+    private long teamId;
 
     protected UserTeamId() {
     }
 
-    public UserTeamId(Long userId, Long teamId) {
+    public UserTeamId(long userId, long teamId) {
         this.userId = userId;
         this.teamId = teamId;
     }
 
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public Long getTeamId() {
+    public long getTeamId() {
         return teamId;
     }
 
