@@ -55,7 +55,7 @@ function UserDashboard() {
     const [tasks, setTasks] = useState(initialTasks);// useState([]) - should be null in the beginning. Just set to initial tasks as a dummy for now
 
     //get possible assignees (can be anyone in user's team)
-    const [assigneeOptions, setAssigneeOptions] = useState(null);
+    const [assigneeOptions, setAssigneeOptions] = useState([]);
     
     //filtering
     const [filterBy, setFilterBy] = useState("");
@@ -129,6 +129,7 @@ function UserDashboard() {
         setTaskStatus("Created");
         setTaskPriority("Medium");
         setDisplayAddEditForm(false);
+        setEditingTask(null)
     }
 
     //handle adding a new task or editing an existing one
@@ -149,7 +150,7 @@ function UserDashboard() {
         }
 
         //determine if adding or editing
-        const url = editingTask ? `/api/edittask/${editingTask.id}` : "/api/addcourse";
+        const url = editingTask ? `/api/edittask/${editingTask.id}` : "/api/addtask";
         const method = editingTask ? "PUT" : "POST";
 
         //request to backend to add or edit a task
