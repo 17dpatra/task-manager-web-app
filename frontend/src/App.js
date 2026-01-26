@@ -18,17 +18,17 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginRegister setIsAuthenticated={setIsAuthenticated}/>} />
           <Route 
-            path="/task-manager" 
+            path="/app" 
             element={
                 <ProtectedRoute isAuthenticated={isAuthenticated}>
                   <DashboardsLayout />
                 </ProtectedRoute>
             }
           >
-            <Route path="user-dashboard" element={<UserDashboard />} />
-            <Route path="team-dashboard" element={<TeamDashboard />} />
+            <Route path="userdashboard" element={<UserDashboard />} />
+            <Route path="teamdashboard" element={<TeamDashboard />} />
             <Route path="calendar" element={<Calendar />} />
-            <Route path="admin-controls" element={<AdminControls />} />
+            <Route path="admincontrols" element={<AdminControls />} />
           </Route>
         </Routes>
       </Router>

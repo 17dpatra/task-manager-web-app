@@ -44,11 +44,12 @@ function LoginRegister({ setIsAuthenticated }) {
 
             if (action === "login") {
                 alert("Login successful!");
-                setIsAuthenticated(true);
-                navigate("/task-manager");
+                setIsAuthenticated(true); //setting this makes all the other endpoints accessible within the app
+                navigate("/app");
             } else {
-                alert("Registration successful! Please login below.");
-                navigate("/");
+                alert("Registration successful!");
+                setIsAuthenticated(true); //setting this makes all the other endpoints accessible within the app
+                navigate("/app");
             }
         }
         catch (error) {
@@ -60,7 +61,7 @@ function LoginRegister({ setIsAuthenticated }) {
 
     return (
         <div>
-            <h1>Welcome to your Task Manager</h1>
+            <h1>Welcome to the Task Manager</h1>
             <div style={{ marginTop: "20px" }}>
                 <div className='login-or-register-form-container'>
                     <h2>Login/Register</h2>

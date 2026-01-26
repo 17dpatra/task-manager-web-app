@@ -8,7 +8,7 @@ function DashboardsLayout() {
 
   //check if we're on the root path (no child route selected)
   //controls when to view dashboard directions and when to hide
-  const isRootPath = location.pathname === '/task-manager';
+  const isRootPath = location.pathname === '/app';
 
   //collapse dropdown once it has been clicked
   const handleDropdownItemClick = () => {
@@ -19,7 +19,7 @@ function DashboardsLayout() {
     <div className="dashboards-layout">
       <nav className="navbar">
         <div>
-          <Link to="/task-manager" className="nav-link">Home</Link>
+          <Link to="/app" className="nav-link">Home</Link>
         </div>
         <div className="nav-item dropdown">
           <button 
@@ -30,16 +30,16 @@ function DashboardsLayout() {
           </button>
           {dropdownOpen && (
             <div className="dropdown-menu">
-              <Link to="/task-manager/user-dashboard" className="dropdown-item" onClick={handleDropdownItemClick}>User Dashboard</Link>
-              <Link to="/task-manager/team-dashboard" className="dropdown-item" onClick={handleDropdownItemClick}>Team Dashboard</Link>
+              <Link to="/app/userdashboard" className="dropdown-item" onClick={handleDropdownItemClick}>User Dashboard</Link>
+              <Link to="/app/teamdashboard" className="dropdown-item" onClick={handleDropdownItemClick}>Team Dashboard</Link>
             </div>
           )}
         </div>
         <div>
-          <Link to="/task-manager/calendar" className="nav-link">Calendar</Link>
+          <Link to="/app/calendar" className="nav-link">Calendar</Link>
         </div>
         <div>
-          <Link to="/task-manager/admin-controls" className="nav-link">Admin Controls</Link>
+          <Link to="/app/admincontrols" className="nav-link">Admin Controls</Link>
         </div>
       </nav>
       <main className="content">
