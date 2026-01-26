@@ -1,16 +1,35 @@
-import React from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import "./App.css";
-import Home from './pages/Home';
-import Tasks from './pages/Tasks';
+import { useState } from 'react';
+import LoginRegister from './pages/LoginRegister';
+import DashboardsLayout from './pages/DashboardsLayout';
+import UserDashboard from './pages/UserDashboard';
+import TeamDashboard from './pages/TeamDashboard';
+import Calendar from './pages/Calendar';
+import AdminControls from './pages/AdminControls';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false); //only allows other routes to be accessible after successful login
+
   return (
     <div className="App">
       <Router>
         <Routes>
-          {/* <Route path="/" element={<Home />} /> */} {/* Just for now since login/register is not set up yet */}
-          <Route path="/" element={<Tasks />} />
+          <Route path="/" element={<LoginRegister setIsAuthenticated={setIsAuthenticated}/>} />
+          <Route 
+            path="/task-manager" 
+            element={
+                <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <DashboardsLayout />
+                </ProtectedRoute>
+            }
+          >
+            <Route path="user-dashboard" element={<UserDashboard />} />
+            <Route path="team-dashboard" element={<TeamDashboard />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="admin-controls" element={<AdminControls />} />
+          </Route>
         </Routes>
       </Router>
     </div>

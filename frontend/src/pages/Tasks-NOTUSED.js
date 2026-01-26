@@ -23,19 +23,36 @@ const initialTasks = {
 
 const statusOrder = ["created", "in-progress", "validating", "completed"];
 const statusColors = {
-    created: "#667eea",
+    created: "#ea6671",
     "in-progress": "#f6ad55",
-    validating: "#68d391",
-    completed: "#9ae6b4"
+    validating: "#686ad3",
+    completed: "#45cf4e"
 };
 
 function Tasks() {
-    const [tasks] = useState(initialTasks);
     const [openStatus, setOpenStatus] = useState(null);
-  
+
+    //toggles opening and closing accordions
     const toggleStatus = (status) => {
         setOpenStatus(openStatus === status ? null : status);
     };
+
+    //add task, edit task
+    const [displayForm, setDisplayForm] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
+
+    //create and edit task form fields
+    const [taskName, setTaskName] = useState("")
+    const [taskDescription, setTaskDescription] = useState("")
+    const [taskDeadline, setTaskDeadline] = useState("")
+    const [taskAssignee, setTaskAssignee] = useState("")
+    const [taskStatus, setTaskStatus] = useState("Created")
+    const [taskPriority, setTaskPriority] = useState("Medium")
+
+    //get tasks
+    const [tasks, setTasks] = useState(initialTasks);// useState([]) - should be null in the beginning. Just set to initial tasks as a dummy for now
+
+    //sorting
     
     return (
         <div style={{ padding: "2rem", margin: "0 auto" }}>

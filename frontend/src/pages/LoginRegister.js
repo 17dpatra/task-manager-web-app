@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
-function Home() {
+function LoginRegister({ setIsAuthenticated }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('user'); //default role is 'user'
@@ -44,7 +44,8 @@ function Home() {
 
             if (action === "login") {
                 alert("Login successful!");
-                navigate("/tasks");
+                setIsAuthenticated(true);
+                navigate("/task-manager");
             } else {
                 alert("Registration successful! Please login below.");
                 navigate("/");
@@ -59,7 +60,7 @@ function Home() {
 
     return (
         <div>
-            <h1>Welcome to the Task Manager</h1>
+            <h1>Welcome to your Task Manager</h1>
             <div style={{ marginTop: "20px" }}>
                 <div className='login-or-register-form-container'>
                     <h2>Login/Register</h2>
@@ -108,4 +109,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default LoginRegister;
