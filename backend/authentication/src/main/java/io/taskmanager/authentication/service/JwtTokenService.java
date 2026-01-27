@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.taskmanager.authentication.dto.user.UserPrincipal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -31,7 +32,7 @@ public class JwtTokenService {
         this.expirationMs = expirationMs;
     }
 
-    public String createToken(User user, Collection<? extends GrantedAuthority> authorities) {
+    public String createToken(UserPrincipal user, Collection<? extends GrantedAuthority> authorities) {
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority) // "ROLE_USER", "ROLE_ADMIN"
                 .toList();

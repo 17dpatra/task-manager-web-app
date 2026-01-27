@@ -2,6 +2,7 @@ package io.taskmanager.authentication.service;
 
 import io.taskmanager.authentication.dto.auth.AuthResponse;
 import io.taskmanager.authentication.dto.auth.LoginRequest;
+import io.taskmanager.authentication.dto.user.UserPrincipal;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,7 +32,7 @@ public class AuthenticationService {
         );
         String token;
         token = jwtTokenService.createToken(
-                (User) authentication.getPrincipal(),
+                (UserPrincipal) authentication.getPrincipal(),
                 authentication.getAuthorities()
         );
 

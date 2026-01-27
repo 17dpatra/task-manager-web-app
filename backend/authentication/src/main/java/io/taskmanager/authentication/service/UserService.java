@@ -2,14 +2,13 @@ package io.taskmanager.authentication.service;
 
 import io.taskmanager.authentication.controller.UserController;
 import io.taskmanager.authentication.dao.AppUserRepository;
-import io.taskmanager.authentication.domain.user.Userprincipal;
+import io.taskmanager.authentication.domain.user.User;
+import io.taskmanager.authentication.dto.user.UserPrincipal;
 import io.taskmanager.authentication.dto.user.UserRequest;
 import io.taskmanager.authentication.dto.user.UserResponse;
 import io.taskmanager.authentication.exception.NotFoundException;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,18 +37,18 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        Userprincipal user = new Userprincipal();
+        User user = new User();
         user.setUsername(normalizedUsername);
         user.setPasswordHash(passwordEncoder.encode(req.password()));
         user.getRoles().addAll(req.roles());
 
-        Userprincipal saved = userRepository.save(user);
+        User saved = userRepository.save(user);
 
         return toUserResponse(saved);
     }
 
     public UserResponse getUserById(long userId) {
-        Userprincipal user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User id not found: " + userId));
 
         return toUserResponse(user);
@@ -57,7 +56,7 @@ public class UserService implements UserDetailsService {
 
     public List<UserResponse> getAllUsers() {
         LoggerFactory.getLogger(UserController.class).info("Getting all users, {}", TransactionSynchronizationManager.isActualTransactionActive());
-        List<Userprincipal> users = userRepository.findAll();
+        List<User> users = userRepository.findAll();
 
         return users.stream()
                 .map(this::toUserResponse)
@@ -73,22 +72,22 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         String normalizedUsername = normalizeUsername(username);
 
-        Userprincipal userprincipal = userRepository.findByUsername(normalizedUsername)
+        User user = userRepository.findByUsername(normalizedUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + normalizedUsername));
 
-        return User.withUsername(userprincipal.getUsername())
-                .password(userprincipal.getPasswordHash())
-                .disabled(!userprincipal.isEnabled())
-                .authorities(
-                        userprincipal.getRoles().stream()
-                                .map(Enum::name)
-                                .map(SimpleGrantedAuthority::new)
-                                .toList()
-                )
-                .build();
+        return new UserPrincipal(
+                user.getId(),
+                user.getUsername(),
+                user.getPasswordHash(),
+                user.isEnabled(),
+                user.getRoles().stream()
+                        .map(Enum::name)
+                        .map(SimpleGrantedAuthority::new)
+                        .toList()
+        );
     }
 
     private String normalizeUsername(String username) {
@@ -107,7 +106,7 @@ public class UserService implements UserDetailsService {
         return value;
     }
 
-    private UserResponse toUserResponse(Userprincipal user) {
+    private UserResponse toUserResponse(User user) {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),

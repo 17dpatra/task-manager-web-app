@@ -1,6 +1,6 @@
 package io.taskmanager.authentication.domain.team;
 
-import io.taskmanager.authentication.domain.user.Userprincipal;
+import io.taskmanager.authentication.domain.user.User;
 import io.taskmanager.authentication.domain.user.UserTeamMembership;
 import jakarta.persistence.*;
 
@@ -19,9 +19,8 @@ public class Team {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private Userprincipal createdBy;
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
@@ -38,7 +37,7 @@ public class Team {
         return name;
     }
 
-    public Userprincipal getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
@@ -54,7 +53,7 @@ public class Team {
         this.name = name;
     }
 
-    public void setCreatedBy(Userprincipal createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 }
