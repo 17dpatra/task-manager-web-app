@@ -1,10 +1,12 @@
 package io.taskmanager.authentication.service;
 
+import io.taskmanager.authentication.controller.UserController;
 import io.taskmanager.authentication.dao.AppUserRepository;
-import io.taskmanager.authentication.domain.user.AppUser;
-import io.taskmanager.authentication.domain.user.CreateUserRequest;
-import io.taskmanager.authentication.domain.user.UserResponse;
-import jakarta.transaction.Transactional;
+import io.taskmanager.authentication.domain.user.Userprincipal;
+import io.taskmanager.authentication.dto.user.UserRequest;
+import io.taskmanager.authentication.dto.user.UserResponse;
+import io.taskmanager.authentication.exception.NotFoundException;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,52 +14,106 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 @Transactional
 public class UserService implements UserDetailsService {
     private final AppUserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder   passwordEncoder;
 
     public UserService(AppUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponse createUser(CreateUserRequest req) {
-        if (userRepository.existsByUsername(req.username())) {
+    public UserResponse createUser(UserRequest req) {
+        String normalizedUsername = normalizeUsername(req.username());
+
+        if (userRepository.existsByUsername(normalizedUsername)) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        AppUser user = new AppUser();
-        user.setUsername(req.username());
+        Userprincipal user = new Userprincipal();
+        user.setUsername(normalizedUsername);
         user.setPasswordHash(passwordEncoder.encode(req.password()));
         user.getRoles().addAll(req.roles());
 
-        AppUser saved = userRepository.save(user);
+        Userprincipal saved = userRepository.save(user);
 
-        return new UserResponse(saved.getId(), saved.getUsername(), saved.getDisplayName(), saved.getRoles());
+        return toUserResponse(saved);
+    }
+
+    public UserResponse getUserById(long userId) {
+        Userprincipal user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User id not found: " + userId));
+
+        return toUserResponse(user);
+    }
+
+    public List<UserResponse> getAllUsers() {
+        LoggerFactory.getLogger(UserController.class).info("Getting all users, {}", TransactionSynchronizationManager.isActualTransactionActive());
+        List<Userprincipal> users = userRepository.findAll();
+
+        return users.stream()
+                .map(this::toUserResponse)
+                .toList();
     }
 
     public void deleteUser(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User id not found: " + userId);
+        }
+
         userRepository.deleteById(userId);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username.trim().toLowerCase())
-                .map(u -> User.withUsername(u.getUsername())
-                        .password(u.getPasswordHash())
-                        .disabled(!u.isEnabled())
-                        .authorities(
-                                u.getRoles().stream()
-                                        .map(Enum::name)
-                                        .map(SimpleGrantedAuthority::new)
-                                        .toList()
-                        )
-                        .build()
+        String normalizedUsername = normalizeUsername(username);
+
+        Userprincipal userprincipal = userRepository.findByUsername(normalizedUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + normalizedUsername));
+
+        return User.withUsername(userprincipal.getUsername())
+                .password(userprincipal.getPasswordHash())
+                .disabled(!userprincipal.isEnabled())
+                .authorities(
+                        userprincipal.getRoles().stream()
+                                .map(Enum::name)
+                                .map(SimpleGrantedAuthority::new)
+                                .toList()
                 )
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found: " + username));
+                .build();
+    }
+
+    private String normalizeUsername(String username) {
+        String value = username;
+
+        if (value == null) {
+            value = "";
+        }
+
+        value = value.trim().toLowerCase();
+
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+
+        return value;
+    }
+
+    private UserResponse toUserResponse(Userprincipal user) {
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getDisplayName(),
+                new HashSet<>(user.getRoles()),
+                new HashSet<>(user.getMemberships())
+        );
     }
 }
