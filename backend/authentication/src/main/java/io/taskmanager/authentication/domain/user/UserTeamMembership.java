@@ -17,7 +17,7 @@ public class UserTeamMembership {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
-    private Userprincipal user;
+    private User user;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("teamId")
     @JoinColumn(name = "team_id", nullable = false)
@@ -29,7 +29,7 @@ public class UserTeamMembership {
     protected UserTeamMembership() {
     }
 
-    public UserTeamMembership(Userprincipal user, Team team, TeamRole role) {
+    public UserTeamMembership(User user, Team team, TeamRole role) {
         this.user = user;
         this.team = team;
         this.role = role;
@@ -47,7 +47,7 @@ public class UserTeamMembership {
         return id;
     }
 
-    public Userprincipal getUser() {
+    public User getUser() {
         return user;
     }
 
