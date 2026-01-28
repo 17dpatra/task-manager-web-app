@@ -37,6 +37,11 @@ public class ControllerAdvice {
                 .body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> badRequest(Exception ex) {
+        return ResponseEntity.badRequest()
+                .body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
     private Map<String, Object> body(HttpStatus status, String message) {
         return Map.of(
                 "timestamp", Instant.now().toString(),

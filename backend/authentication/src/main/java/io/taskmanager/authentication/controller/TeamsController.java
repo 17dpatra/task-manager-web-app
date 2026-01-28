@@ -54,7 +54,8 @@ public class TeamsController {
             @PathVariable Long teamId,
             @Valid @RequestBody TeamRequest req
     ) {
-        return teams.updateTeam(teamId, req);
+        return null;
+        //return teams.updateTeam(teamId, req);
     }
 
     // -------------------------
