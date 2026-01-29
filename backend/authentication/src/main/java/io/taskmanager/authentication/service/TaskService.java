@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.taskmanager.authentication.dao.TaskRepository;
 import io.taskmanager.authentication.domain.task.Task;
+import io.taskmanager.authentication.dto.task.TaskResponse;
 import io.taskmanager.authentication.exception.NotFoundException;
 
 @Service
@@ -20,17 +21,30 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> getTasksByUser(Long userId) {
-        return taskRepository.findByUserId(userId);
+    public List<TaskResponse> getTasksByUser(Long userId) {
+        return taskRepository.findByUserId(userId)
+                .stream()
+                .map(task -> new TaskResponse(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getDescription(),
+                        task.getStatus()
+                ))
+                .toList();
     }
 
-    public Task updateTask(Task task) {
+    public TaskResponse updateTask(Task task) {
         Task existingTask = taskRepository.findById(task.getId())
                 .orElseThrow(() -> new NotFoundException("Task id not found: " + task.getId()));
         existingTask.setTitle(task.getTitle());
         existingTask.setDescription(task.getDescription());
         existingTask.setStatus(task.getStatus());
-        return taskRepository.save(existingTask);
+        return new TaskResponse(
+                existingTask.getId(),
+                existingTask.getTitle(),
+                existingTask.getDescription(),
+                existingTask.getStatus()
+        );
     }
 
     public void deleteTask(Long taskId) {
