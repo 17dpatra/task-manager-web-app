@@ -3,6 +3,8 @@ package io.taskmanager.authentication.domain.task;
 import jakarta.persistence.*;
 import io.taskmanager.authentication.domain.user.*;
 
+@Entity
+@Table(name = "tasks")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
