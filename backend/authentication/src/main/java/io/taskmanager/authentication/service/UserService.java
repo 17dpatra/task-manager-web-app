@@ -1,11 +1,14 @@
 package io.taskmanager.authentication.service;
 
+import io.taskmanager.authentication.SecurityUtils;
 import io.taskmanager.authentication.controller.UserController;
 import io.taskmanager.authentication.dao.AppUserRepository;
 import io.taskmanager.authentication.domain.user.User;
+import io.taskmanager.authentication.dto.user.UserRole;
 import io.taskmanager.authentication.dto.user.UserPrincipal;
 import io.taskmanager.authentication.dto.user.UserRequest;
 import io.taskmanager.authentication.dto.user.UserResponse;
+import io.taskmanager.authentication.exception.NotAllowedException;
 import io.taskmanager.authentication.exception.NotFoundException;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -64,10 +67,15 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User id not found: " + userId);
+        if (!SecurityUtils.isGlobalAdmin()) {
+            throw new NotFoundException("Only global admins can delete users");
         }
 
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(userId));
+
+        if (user.getRoles().contains(UserRole.GLOBAL_ADMIN)) {
+            throw new NotAllowedException("Cannot delete global admin users");
+        }
         userRepository.deleteById(userId);
     }
 
@@ -111,8 +119,7 @@ public class UserService implements UserDetailsService {
                 user.getId(),
                 user.getUsername(),
                 user.getDisplayName(),
-                new HashSet<>(user.getRoles()),
-                new HashSet<>(user.getMemberships())
+                new HashSet<>(user.getRoles())
         );
     }
 }
