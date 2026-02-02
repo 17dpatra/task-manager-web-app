@@ -32,7 +32,6 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable("id") long id) {
         UserResponse response = userService.getUserById(id);
-
         return ResponseEntity.ok(response);
     }
 
@@ -44,14 +43,11 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
-        LoggerFactory.getLogger(UserController.class).info("Getting all users, {}", TransactionSynchronizationManager.isActualTransactionActive());
         List<UserResponse> responses = userService.getAllUsers();
-
         return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) {
         userService.deleteUser(id);
 

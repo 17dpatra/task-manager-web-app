@@ -1,10 +1,12 @@
 package io.taskmanager.authentication.config;
 
+import io.taskmanager.authentication.exception.TokenFilterException;
 import io.taskmanager.authentication.service.JwtTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,20 +39,25 @@ public class TokenFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            try {
+                String token = authHeader.substring(7);
 
-            String username = jwtUtil.extractUsername(token);
+                String username = jwtUtil.extractUsername(token);
 
-            // Optional: load user (for extra checks like user still enabled)
-            UserDetails user = userDetailsService.loadUserByUsername(username);
+                UserDetails user = userDetailsService.loadUserByUsername(username);
 
-            List<GrantedAuthority> authorities = jwtUtil.extractRoles(token).stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toUnmodifiableList());
+                List<GrantedAuthority> authorities = jwtUtil.extractRoles(token)
+                        .stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toUnmodifiableList());
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            catch (Exception e) {
+                throw new TokenFilterException(e);
+            }
         }
 
         filterChain.doFilter(request, response);
