@@ -12,7 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -20,14 +20,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, TokenFilter tokenFilter) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, TokenFilter tokenFilter, DefaultAuthenticationEntryPoint defaultAuthenticaionEntryPoint) throws Exception {
          return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/*").permitAll()
+                        .requestMatchers("/api/v1/auth/*", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class).build();
+                .exceptionHandling(it -> it.authenticationEntryPoint(defaultAuthenticaionEntryPoint))
+                .addFilterAfter(tokenFilter, ExceptionTranslationFilter.class)
+                .build();
     }
 
     @Bean

@@ -1,7 +1,7 @@
 package io.taskmanager.authentication.controller;
 
 
-import io.taskmanager.authentication.domain.user.User;
+import io.taskmanager.authentication.dto.team.TeamMembershipResponse;
 import io.taskmanager.authentication.dto.team.TeamRequest;
 import io.taskmanager.authentication.dto.team.TeamResponse;
 import io.taskmanager.authentication.dto.user.UserPrincipal;
@@ -23,46 +23,37 @@ public class TeamsController {
         this.teams = teams;
     }
 
-    // -------------------------
-    // Get teams I belong to
-    // -------------------------
     @GetMapping
-    public List<TeamResponse> getMyTeams(
-            @AuthenticationPrincipal UserPrincipal me
-    ) {
-        return teams.getMyTeams(me);
+    public List<TeamResponse> getMyTeams() {
+        return teams.getMyTeams();
     }
 
-    // -------------------------
-    // Create team (ADMIN only)
-    // -------------------------
     @PostMapping
     @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
     public TeamResponse createTeam(
             @AuthenticationPrincipal UserPrincipal me,
-            @Valid @RequestBody TeamRequest req
-    ) {
+            @Valid @RequestBody TeamRequest req) {
         return teams.createTeam(me, req);
     }
 
-    // -------------------------
-    // Update team (ADMIN only)
-    // -------------------------
     @PutMapping("/{teamId}")
-    @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
     public TeamResponse updateTeam(
             @PathVariable Long teamId,
-            @Valid @RequestBody TeamRequest req
-    ) {
-        return null;
-        //return teams.updateTeam(teamId, req);
+            @Valid @RequestBody TeamRequest req) {
+        return teams.updateTeam(teamId, req);
     }
 
-    // -------------------------
-    // Delete team (ADMIN only)
-    // -------------------------
+    @GetMapping("/{teamId}")
+    public TeamResponse findTeamById(@PathVariable Long teamId) {
+        return teams.findTeamById(teamId);
+    }
+
+    @GetMapping("/{teamId}/users")
+    public List<TeamMembershipResponse> getTeamsUser(@PathVariable Long teamId) {
+        return teams.getTeamMembers(teamId);
+    }
+
     @DeleteMapping("/{teamId}")
-    @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
     public void deleteTeam(@PathVariable Long teamId) {
         teams.deleteTeam(teamId);
     }

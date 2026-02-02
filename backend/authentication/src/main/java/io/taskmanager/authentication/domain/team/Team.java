@@ -1,6 +1,5 @@
 package io.taskmanager.authentication.domain.team;
 
-import io.taskmanager.authentication.domain.user.User;
 import io.taskmanager.authentication.domain.user.UserTeamMembership;
 import jakarta.persistence.*;
 

@@ -1,6 +1,7 @@
 package io.taskmanager.authentication;
 
 
+import io.taskmanager.authentication.domain.user.UserRole;
 import io.taskmanager.authentication.dto.user.UserPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,6 +67,6 @@ public final class SecurityUtils {
      * Convenience helper
      */
     public static boolean isGlobalAdmin() {
-        return hasAuthority("ROLE_GLOBAL_ADMIN");
+        return hasAuthority(UserRole.GLOBAL_ADMIN.toString());
     }
 }
