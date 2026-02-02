@@ -13,6 +13,16 @@ public class Task {
     private String title;
     private String description;
     private String status; // TODO, IN_PROGRESS, COMPLETED
+    private String priority;
+    private String dueDate;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "assigned_to")
+    private User assignedTo;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -57,6 +67,38 @@ public class Task {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public String getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(String dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public User getAssignedTo() {
+        return assignedTo;
+    }
+
+    public void setAssignedTo(User assignedTo) {
+        this.assignedTo = assignedTo;
     }
     
 }
