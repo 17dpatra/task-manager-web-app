@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.*;
 import io.taskmanager.authentication.domain.user.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "tasks")
 @Hidden
@@ -16,19 +19,15 @@ public class Task {
     private String description;
     private String status; // TODO, IN_PROGRESS, COMPLETED
     private String priority;
-    private String dueDate;
+    private LocalDate dueDate;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 
     @ManyToOne
-    @JoinColumn(name = "assigned_to")
-    private User assignedTo;
-
-    @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private User assignedTo;
 
     // getters/setters
     public Long getId() {
@@ -63,14 +62,6 @@ public class Task {
         this.status = status;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public String getPriority() {
         return priority;
     }
@@ -79,11 +70,11 @@ public class Task {
         this.priority = priority;
     }
 
-    public String getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(String dueDate) {
+    public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
 
