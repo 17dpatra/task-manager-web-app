@@ -4,11 +4,8 @@ package io.taskmanager.authentication.controller;
 import io.taskmanager.authentication.dto.team.TeamMember;
 import io.taskmanager.authentication.dto.team.TeamRequest;
 import io.taskmanager.authentication.dto.team.TeamResponse;
-import io.taskmanager.authentication.dto.user.UserPrincipal;
 import io.taskmanager.authentication.service.TeamService;
 import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,11 +26,8 @@ public class TeamsController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('GLOBAL_ADMIN')")
-    public TeamResponse createTeam(
-            @AuthenticationPrincipal UserPrincipal me,
-            @Valid @RequestBody TeamRequest req) {
-        return teams.createTeam(me, req);
+    public TeamResponse createTeam(@Valid @RequestBody TeamRequest req) {
+        return teams.createTeam(req);
     }
 
     @PutMapping("/{teamId}")

@@ -11,7 +11,6 @@ import io.taskmanager.authentication.domain.user.UserTeamMembership;
 import io.taskmanager.authentication.dto.team.TeamMember;
 import io.taskmanager.authentication.dto.team.TeamRequest;
 import io.taskmanager.authentication.dto.team.TeamResponse;
-import io.taskmanager.authentication.dto.user.UserPrincipal;
 import io.taskmanager.authentication.exception.AlreadyExistsException;
 import io.taskmanager.authentication.exception.NotAllowedException;
 import io.taskmanager.authentication.exception.NotFoundException;
@@ -38,14 +37,7 @@ public class TeamService {
 
     @Transactional
     public List<TeamResponse> getMyTeams() {
-        List<Team> teams;
-        if (SecurityUtils.isGlobalAdmin()) {
-            teams = teamRepo.findAll();
-        }
-        else {
-            teams = membershipRepo.findTeamsByUserId(SecurityUtils.getCurrentUserId());
-        }
-        return teams.stream()
+        return membershipRepo.findTeamsByUserId(SecurityUtils.getCurrentUserId()).stream()
                 .map(TeamService::toResponse)
                 .toList();
     }
@@ -53,12 +45,9 @@ public class TeamService {
     @Transactional
     public List<TeamMember> getTeamMembers(Long teamId) {
         teamRepo.findById(teamId).orElseThrow(() -> new NotFoundException(teamId));
-
         Long requesterId = SecurityUtils.getCurrentUserId();
-        if (!SecurityUtils.isGlobalAdmin()) {
-            membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
-                    .orElseThrow(() -> new NotAllowedException("You are not a member of this team"));
-        }
+        membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
+                .orElseThrow(() -> new NotAllowedException("You are not a member of this team"));
 
         return membershipRepo.findByTeamId(teamId).stream()
                 .map(m -> new TeamMember(
@@ -69,26 +58,25 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamResponse createTeam(UserPrincipal creator, TeamRequest req) {
+    public TeamResponse createTeam(TeamRequest req) {
         try {
+            if (!SecurityUtils.isGlobalAdmin()) {
+                throw new NotAllowedException("Only admins can create teams");
+            }
             Team team = new Team();
             team.setName(req.name().trim());
-            team.setCreatedBy(creator.id());
+            team.setCreatedBy(SecurityUtils.getCurrentUserId());
 
             Team saved = teamRepo.save(team);
 
             UserTeamMembership membership = new UserTeamMembership(
-                    userService.getReferenceById(creator.id()),
+                    userService.getReferenceById(SecurityUtils.getCurrentUserId()),
                     saved,
-                    TeamRole.ADMIN
+                    TeamRole.GLOBAL_ADMIN
             );
-
-            if (!SecurityUtils.isGlobalAdmin()) {
-                UserTeamMembership savedMembership = membershipRepo.save(membership);
-                team.getMemberships().add(savedMembership);
-                saved = teamRepo.save(saved);
-            }
-
+            UserTeamMembership savedMembership = membershipRepo.save(membership);
+            team.getMemberships().add(savedMembership);
+            saved = teamRepo.save(saved);
 
             return updateTeam(saved.getId(), req);
         }
@@ -102,10 +90,8 @@ public class TeamService {
         Team team = teamRepo.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("Team not found"));
         Long requesterId = SecurityUtils.getCurrentUserId();
-        if (!SecurityUtils.isGlobalAdmin()) {
-            membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
-                    .orElseThrow(() -> new NotFoundException(requesterId + " is not a member of this team"));
-        }
+        membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
+                .orElseThrow(() -> new NotFoundException(requesterId + " is not a member of this team"));
         return toResponse(team);
     }
 
@@ -114,13 +100,11 @@ public class TeamService {
         Team team = teamRepo.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("Team not found"));
         Long requesterId = SecurityUtils.getCurrentUserId();
-        if (!SecurityUtils.isGlobalAdmin()) {
-            UserTeamMembership myMembership = membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
-                    .orElseThrow(() -> new NotFoundException(requesterId + " is not a member of this team"));
+        UserTeamMembership myMembership = membershipRepo.findByUserIdAndTeamId(requesterId, teamId)
+                .orElseThrow(() -> new NotFoundException(requesterId + " is not a member of this team"));
 
-            if (myMembership.getRole() != TeamRole.ADMIN) {
-                throw new NotAllowedException("Team admin privileges required");
-            }
+        if (myMembership.getRole() != TeamRole.GLOBAL_ADMIN) {
+            throw new NotAllowedException("Team admin privileges required");
         }
 
         if (req.name() != null && !req.name().isBlank()) {
@@ -140,7 +124,7 @@ public class TeamService {
 
                 User user = userService.getReferenceById(m.userId());
 
-                TeamRole desiredRole = (m.role() != null) ? m.role() : TeamRole.MEMBER;
+                TeamRole desiredRole = (m.role() != null) ? m.role() : TeamRole.USER;
 
                 UserTeamMembership membership = membershipRepo
                         .findByUserIdAndTeamId(m.userId(), teamId)
@@ -172,13 +156,11 @@ public class TeamService {
 
     @Transactional
     public void deleteTeam(Long teamId) {
-        if (!SecurityUtils.isGlobalAdmin()) {
-            UserTeamMembership myMembership = membershipRepo.findByUserIdAndTeamId(SecurityUtils.getCurrentUserId(), teamId)
-                    .orElseThrow(() -> new NotFoundException(SecurityUtils.getCurrentUserId() + " is not a member of this team"));
+        UserTeamMembership myMembership = membershipRepo.findByUserIdAndTeamId(SecurityUtils.getCurrentUserId(), teamId)
+                .orElseThrow(() -> new NotFoundException(SecurityUtils.getCurrentUserId() + " is not a member of this team"));
 
-            if (myMembership.getRole() != TeamRole.ADMIN) {
-                throw new NotAllowedException("Team admin privileges required to delete your team");
-            }
+        if (myMembership.getRole() != TeamRole.GLOBAL_ADMIN) {
+            throw new NotAllowedException("Team admin privileges required to delete your team");
         }
 
         Team team = teamRepo.findById(teamId)
