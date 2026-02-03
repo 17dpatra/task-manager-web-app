@@ -26,7 +26,7 @@ public class UserTeamMembership {
     private Team team;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TeamRole role = TeamRole.MEMBER;
+    private TeamRole role = TeamRole.USER;
 
     protected UserTeamMembership() {
     }
