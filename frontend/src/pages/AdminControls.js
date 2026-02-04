@@ -2,30 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import './styles/Calendar.css';
 import { AuthContext } from '../context/AuthContext';
 
-//TODO: call valid API for getting, adding, editing, deleting teams
-//TODO: call valid API for getting all users
-
-//dummy values for testing
-//team.members = user IDs
-const initialTeams =
-[
-    { id: "team-1", name: "Team 1", members: ["user-1", "user-2"]},
-    { id: "team-2", name: "Team 2", members: ["user-1", "user-2", "user-3"] }
-];
-
-const allUsers = 
-[
-    { id: "user-1", name: "User 1" },
-    { id: "user-2", name: "User 2" },
-    { id: "user-3", name: "User 3" },
-    { id: "user-4", name: "User 4" },
-    { id: "user-5", name: "User 5" },
-]
-
-
 function AdminControls() {
     const { user } = useContext(AuthContext); //user's details
     const [openTeamId, setOpenTeamId] = useState(null);
+    const token = localStorage.getItem("token");
 
     //toggles opening and closing accordions
     const toggleTeam = (teamId) => {
@@ -41,19 +21,20 @@ function AdminControls() {
     const [teamMembers, setTeamMembers] = useState([]);
 
     //get teams that user controls
-    const [teams, setTeams] = useState(initialTeams); //should be useState([])
+    const [teams, setTeams] = useState([]);
 
     //get all users (every single one)
-    const [teamMemberOptions, setTeamMemberOptions] = useState(allUsers) //should be useState([])
+    const [teamMemberOptions, setTeamMemberOptions] = useState([])
 
 
     //fetch teams from backend on component mount
     const getTeams = async () => {
         try {
-            const response = await fetch("/api/teams/username", {
+            const response = await fetch("/api/v1/teams", {
                 method: "GET",
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
             });
             
@@ -76,10 +57,11 @@ function AdminControls() {
     //fetch all users
     const getAllUsers = async () => {
         try {
-            const response = await fetch("/api/users", {
+            const response = await fetch("/api/v1/users", {
                 method: "GET",
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
             });
             
@@ -111,6 +93,7 @@ function AdminControls() {
         setTeamMembers([]);
         setDisplayAddEditForm(false);
         setEditingTeam(null)
+        getAllUsers();
     }
 
 
@@ -125,8 +108,61 @@ function AdminControls() {
         }
 
         //determine if adding or editing
-        const url = editingTeam ? `/api/editteam/${editingTeam.id}` : "/api/addteam";
+        const url = editingTeam ? `/api/v1/teams/${editingTeam.id}` : "/api/v1/teams";
         const method = editingTeam ? "PUT" : "POST";
+
+        const payload = {
+            name: "",
+            addMembers: [],
+            removeUserIds: []
+        };
+
+        if (editingTeam) {
+            //editing data
+            //find added members and removed members compared to old data
+            const oldTeamMembers = editingTeam.members;
+            //console.log('oldTeamMembers', oldTeamMembers)
+            const addMembers = teamMembers.map(userId => {
+                const newUsers = teamMemberOptions.find(u => u.id === Number(userId));
+                return {
+                    userId: newUsers.id,
+                    role: newUsers.roles[0]
+                };
+            });
+
+            let removedUserIds = [];
+            if (oldTeamMembers.length > 0)
+            {
+                let teamMemberIds = teamMembers.map(u => Number(u))
+                removedUserIds = oldTeamMembers.filter(member => !teamMemberIds.includes(Number(member.userId)))
+                removedUserIds = removedUserIds.map(m => m.userId)
+                let indexOfAdminId = removedUserIds.indexOf(user.id)
+                if (indexOfAdminId > -1) {
+                    removedUserIds.splice(indexOfAdminId, 1);
+                }
+            }
+            
+            payload.name = teamName;
+            payload.addMembers = addMembers
+            payload.removeUserIds = removedUserIds
+        }
+        else {
+            //add data
+            //find added members
+            const addMembers = teamMembers.map(userId => {
+                const allUsers = teamMemberOptions.find(u => u.id === Number(userId));
+                return {
+                    userId: allUsers.id,
+                    role: allUsers.roles[0]
+                };
+            });
+
+            payload.name = teamName;
+            payload.addMembers = addMembers
+        }
+        
+
+        //console.log('payload', payload)
 
         //request to backend to add or edit a task
         try {
@@ -134,8 +170,9 @@ function AdminControls() {
                 method: method,
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ name: teamName, teamMembers: teamMembers }),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
@@ -158,20 +195,25 @@ function AdminControls() {
 
     //populate form with existing data for editing
     const handleEdit = (team) => {
-        setEditingTeam(team);
+        setEditingTeam(team); //old data
         setTeamName(team.name);
-        setTeamMembers(team.members); //team.members already contains IDs
+        setTeamMembers(team.members.map(m => String(m.userId)));
         setDisplayAddEditForm(true);
     };
 
 
     //handle deleting a team
     const handleDelete = async (teamId) => {
+        //console.log(teamId)
         if (!window.confirm("Are you sure you want to delete this team?")) return;
 
         try {
-            const response = await fetch(`/api/deleteteam/${teamId}`, {
+            const response = await fetch(`/api/v1/teams/${teamId}`, {
                 method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
             });
 
             if (response.ok) {
@@ -230,7 +272,7 @@ function AdminControls() {
                                 <select
                                 className="form-control"
                                 value={teamMembers}
-                                onChange={(e) => setTeamMembers(Array.from(e.target.selectedOptions, option => option.value))}
+                                onChange={(e) => setTeamMembers(Array.from(e.target.selectedOptions, option => Number(option.value)))}
                                 multiple
                                 required
                                 >
@@ -239,7 +281,7 @@ function AdminControls() {
                                         key={user.id} 
                                         value={user.id}
                                         >
-                                            {user.name}
+                                            {user.username}
                                         </option>
                                     ))}
                                 </select>
@@ -342,11 +384,11 @@ function AdminControls() {
                                 {team.members.length === 0 ? (
                                     <p style={{ color: "#888" }}>No members</p>
                                 ) : (
-                                    team.members.map((memberId) => {
-                                        const user = teamMemberOptions.find((u) => u.id === memberId);
+                                    team.members.map((member) => {
+                                        const userInTeam = teamMemberOptions.find((u) => u.id === member.userId);
                                         return (
                                             <div
-                                            key={memberId}
+                                            key={member.userId}
                                             style={{
                                                 padding: "0.75rem 1rem",
                                                 borderRadius: "6px",
@@ -354,7 +396,7 @@ function AdminControls() {
                                                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
                                             }}
                                             >
-                                                {user ? user.name : "Unknown User"}
+                                                {userInTeam ? userInTeam.username : "Unknown User"}
                                             </div>
                                         );
                                     })

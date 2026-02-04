@@ -22,14 +22,16 @@ const initialTasks = {
     ]
 };
 
-const statusOrder = ["created", 
-    //"in-progress", 
-    //"validating", 
-    "completed"];
+const statusOrder = [
+    "created", 
+    "in-progress", 
+    "validating", 
+    "completed"
+];
 const statusColors = {
     created: "#ea6671",
-    //"in-progress": "#f6ad55",
-    //validating: "#686ad3",
+    "in-progress": "#f6ad55",
+    validating: "#686ad3",
     completed: "#45cf4e"
 };
 
@@ -70,7 +72,7 @@ function UserDashboard() {
     //fetch tasks from backend on component mount
     const getTasks = async () => {
         try {
-            const response = await fetch(`/api/v1/tasks/get_tasks/${user.id}`, {
+            const response = await fetch(`/api/v2/tasks/get_tasks?userId=${user.id}`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json',
@@ -122,8 +124,8 @@ function UserDashboard() {
 
     //get tasks and assignees on component mount
     useEffect(() => {
-        getTasks();
-        getAssignees();
+        //getTasks();
+        //getAssignees();
     }, []);
 
 
@@ -157,7 +159,7 @@ function UserDashboard() {
         }
 
         //determine if adding or editing
-        const url = editingTask ? `/api/v1/tasks/update_task/${editingTask.id}` : "/api/v1/tasks/addtask";
+        const url = editingTask ? `/api/v1/tasks/update_task/${editingTask.id}` : "/api/v2/tasks/create_task";
         const method = editingTask ? "PUT" : "POST";
 
         //request to backend to add or edit a task
@@ -354,7 +356,20 @@ function UserDashboard() {
                                 <label className="form-label">Status <span className="text-danger">*</span></label>
                                 <select
                                 value={taskStatus}
-                                onChange={(e) => setTaskStatus(e.target.value)}
+                                onChange={(e) => setTaskPriority(e.target.value)}
+                                >
+                                    <option value="created">Created</option>
+                                    <option value="in-progress">In-Progress</option>
+                                    <option value="validating">Validating</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Priority <span className="text-danger">*</span></label>
+                                <select
+                                value={taskStatus}
+                                onChange={(e) => setTaskPriority(e.target.value)}
                                 >
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
