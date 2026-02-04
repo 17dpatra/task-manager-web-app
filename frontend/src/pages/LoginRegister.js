@@ -35,7 +35,7 @@ function LoginRegister({ setIsAuthenticated }) {
                 body: JSON.stringify({username, password, roles: [role] }),
             });
             const data = await response.json();
-            console.log(data);
+            //console.log(data);
             
             if (!response.ok) {
                 alert(`${data.error}: ${data.message}` || `${action} failed`);

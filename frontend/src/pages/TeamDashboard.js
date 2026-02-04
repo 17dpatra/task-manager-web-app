@@ -9,28 +9,30 @@ import { AuthContext } from '../context/AuthContext';
 //dummy values for testing
 const initialTasks = {
     created: [
-        { id: "task-1", name: "Set up repo" },
-        { id: "task-2", name: "Design database" }
+        { id: "task-1", name: "Set up repo", user_id: 1, username: "user1", team_id: 1, team_name: "team1" },
+        { id: "task-2", name: "Design database", user_id: 2, username: "user2",  team_id: 1, team_name: "team1" }
     ],
     "in-progress": [
-        { id: "task-3", name: "Implement login form" }
+        { id: "task-3", name: "Implement login form", user_id: 3, username: "user3",  team_id: 1, team_name: "team1" }
     ],
     validating: [
-        { id: "task-4", name: "Write unit tests" }
+        { id: "task-4", name: "Write unit tests", user_id: 4, username: "user4",  team_id: 2, team_name: "team2" }
     ],
     completed: [
-        { id: "task-5", name: "Deploy app" }
+        { id: "task-5", name: "Deploy app", user_id: 5, username: "user5",  team_id: 2, team_name: "team2" }
     ]
 };
 
-const statusOrder = ["created", 
-    //"in-progress", 
-    //"validating",
-    "completed"];
+const statusOrder = [
+    "created", 
+    "in-progress", 
+    "validating",
+    "completed"
+];
 const statusColors = {
     created: "#ea6671",
-    //"in-progress": "#f6ad55",
-    //validating: "#686ad3",
+    "in-progress": "#f6ad55",
+    validating: "#686ad3",
     completed: "#45cf4e"
 };
 

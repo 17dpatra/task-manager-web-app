@@ -39,7 +39,7 @@ function DashboardsLayout() {
         }
         else {
           setUser(data)
-          console.log(data)
+          //console.log(data)
           if (data.roles[0] == "GLOBAL_ADMIN") {
             setAdminDisplay(true)
           }
