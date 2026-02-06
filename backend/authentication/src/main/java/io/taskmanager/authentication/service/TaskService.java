@@ -42,19 +42,21 @@ public class TaskService {
         User creator = userRepository.getReferenceById(SecurityUtils.getCurrentUserId());
 
         Task task = new Task();
-        task.setTitle(req.title());
+        task.setTitle(req.name());
         task.setDescription(req.description());
         task.setStatus(req.status() == null ? TaskStatus.CREATED : req.status());
         task.setPriority(req.priority());
-        task.setDueDate(req.dueDate());
-
-        if (req.assignedUserId() != null) {
-            if (req.assignedUserId() > 0L) {
-                User assignee = userRepository.findById(req.assignedUserId())
-                        .orElseThrow(() -> new NotFoundException("Assigned user not found: " + req.assignedUserId()));
+        task.setDueDate(req.deadline());
+System.out.println("Assigned User ID: " + req.assignee());
+        if (req.assignee() != null) {
+            if (req.assignee() != null && req.assignee() > 0L) {
+                
+System.out.println("Assigned User ID: " + req.assignee());
+                User assignee = userRepository.findById(req.assignee())
+                        .orElseThrow(() -> new NotFoundException("Assigned user not found: " + req.assignee()));
                 task.setAssignedTo(assignee);
             } else {
-                throw new IllegalArgumentException("assignedUserId must be >= 0");
+                throw new IllegalArgumentException("assignee must be >= 0");
             }
         }
 
@@ -68,19 +70,19 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
 
-        if (req.title() != null) task.setTitle(req.title());
+        if (req.name() != null) task.setTitle(req.name());
         if (req.description() != null)  task.setDescription(req.description());
         if (req.status() != null)  task.setStatus(req.status());
         if (req.priority() != null)  task.setPriority(req.priority());
-        if (req.dueDate() != null)  task.setDueDate(req.dueDate());
+        if (req.deadline() != null)  task.setDueDate(req.deadline());
 
-        if (req.assignedUserId() != null) {
-            if (req.assignedUserId() > 0L) {
-                User assignee = userRepository.findById(req.assignedUserId())
-                        .orElseThrow(() -> new NotFoundException("Assigned user not found: " + req.assignedUserId()));
+        if (req.assignee() != null) {
+            if (req.assignee() > 0L) {
+                User assignee = userRepository.findById(req.assignee())
+                        .orElseThrow(() -> new NotFoundException("Assigned user not found: " + req.assignee()));
                 task.setAssignedTo(assignee);
             } else {
-                throw new IllegalArgumentException("assignedUserId must be >= 0");
+                throw new IllegalArgumentException("assignee must be >= 0");
             }
         }
 
@@ -166,7 +168,8 @@ public class TaskService {
                 t.getDescription(),
                 t.getStatus(),
                 t.getPriority(),
-                t.getDueDate()
+                t.getDueDate(),
+                t.getAssignedTo() != null ? t.getAssignedTo().getId() : null
         );
     }
 

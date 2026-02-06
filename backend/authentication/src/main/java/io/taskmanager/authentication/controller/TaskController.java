@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/tasks")
+@RequestMapping("/api/v2/tasks")
 public class TaskController {
 
     private final TaskService taskService;
@@ -20,7 +20,7 @@ public class TaskController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/create_task")
     public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody TaskRequest taskRequest) {
         return ResponseEntity.ok(taskService.createTask(taskRequest));
     }
@@ -34,8 +34,8 @@ public class TaskController {
     }
 
     // GET ALL
-    // GET /api/v1/tasks
-    @GetMapping
+    // GET /api/v1/tasks/get_tasks
+    @GetMapping("/get_tasks")
     public ResponseEntity<List<TaskResponse>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTasks());
     }

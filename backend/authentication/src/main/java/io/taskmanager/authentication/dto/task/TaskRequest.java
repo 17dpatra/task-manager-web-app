@@ -6,11 +6,11 @@ import java.time.LocalDate;
 
 
 public record TaskRequest(
-        String title,
+        String name,
         String description,
         TaskStatus status,
         String priority,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        LocalDate dueDate,
-        Long assignedUserId
+        LocalDate deadline,
+        Long assignee
 ) {}

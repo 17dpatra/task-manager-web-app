@@ -3,10 +3,12 @@ package io.taskmanager.authentication.dto.task;
 import java.time.LocalDate;
 
 public record TaskResponse(
+
         Long id,
-        String title,
+        String name,
         String description,
         TaskStatus status,
         String priority,
-        LocalDate dueDate
+        LocalDate deadline,
+        Long assignedUserId
 ) {}
