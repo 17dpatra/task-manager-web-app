@@ -47,11 +47,8 @@ public class TaskService {
         task.setStatus(req.status() == null ? TaskStatus.CREATED : req.status());
         task.setPriority(req.priority());
         task.setDueDate(req.deadline());
-System.out.println("Assigned User ID: " + req.assignee());
         if (req.assignee() != null) {
             if (req.assignee() != null && req.assignee() > 0L) {
-                
-System.out.println("Assigned User ID: " + req.assignee());
                 User assignee = userRepository.findById(req.assignee())
                         .orElseThrow(() -> new NotFoundException("Assigned user not found: " + req.assignee()));
                 task.setAssignedTo(assignee);

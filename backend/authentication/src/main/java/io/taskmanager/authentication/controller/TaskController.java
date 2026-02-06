@@ -2,12 +2,14 @@ package io.taskmanager.authentication.controller;
 
 import io.taskmanager.authentication.dto.task.TaskRequest;
 import io.taskmanager.authentication.dto.task.TaskResponse;
+import io.taskmanager.authentication.dto.task.TeamTaskResponse;
 import io.taskmanager.authentication.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v2/tasks")
@@ -38,6 +40,13 @@ public class TaskController {
     @GetMapping("/get_tasks")
     public ResponseEntity<List<TaskResponse>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTasks());
+    }
+
+    // GET ALL
+    // GET /api/v1/tasks/get_tasks/team/{teamId}
+    @GetMapping("/get_tasks/team/{teamId}")
+    public ResponseEntity<Map<String, List<TeamTaskResponse>>> getAllTasks(@PathVariable Long teamId) {
+        return ResponseEntity.ok(taskService.getTeamTasksGroupedByStatus(teamId));
     }
 
     // GET BY ID
